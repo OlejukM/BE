@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
+const cors = require('cors');
 
 require('dotenv').config();
 const mongoString = process.env.DATABASE_URL
@@ -13,8 +14,6 @@ const suppliesRouter = require('./routes/supplies');
 const authRoutes = require('./routes/auth');
 
 mongoose.connect(mongoString, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
   dbName: 'Sales',
 });
 const database = mongoose.connection;
@@ -33,12 +32,20 @@ database.once('connected', () => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 app.use('/users', usersRouter);
 app.use('/details', detailsRouter);
 app.use('/suppliers', suppliersRouter);
 app.use('/supplies', suppliesRouter);
 app.use('/auth', authRoutes);
+
+app.use(cors({
+  origin: 'http://localhost:4200', // Allow requests from this origin
+  methods: ['GET', 'POST', 'PUT'], // Allow only GET and POST requests
+  allowedHeaders: ['Content-Type'], // Allow only headers with Content-Type
+}));
+
 
 
 app.use((err, req, res, next) => {
